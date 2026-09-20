@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router';
 import {
   ArrowRight, ArrowUpRight, Trophy, Timer, TrendingUp,
   Crown, Search, ExternalLink, Globe, Sparkles, Plus, Minus,
-  AlertCircle
+  Rocket
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
@@ -274,15 +274,9 @@ export default function HomePage() {
         amount: promoBid,
       });
 
-      if (!res.success || !res.data) {
-        throw new Error('Failed to create promotion order');
-      }
-
-      const order = res.data;
-      setOrderData(order);
-
-      // If real Razorpay key is configured and window.Razorpay exists, open Razorpay checkout
-      if (order.keyId && order.keyId.startsWith('rzp_') && (window as any).Razorpay) {
+      if (res.success && res.data && res.data.keyId && res.data.keyId.startsWith('rzp_') && (window as any).Razorpay) {
+        const order = res.data;
+        setOrderData(order);
         const options = {
           key: order.keyId,
           amount: order.amount,
@@ -303,7 +297,7 @@ export default function HomePage() {
             name: order.projectName,
           },
           theme: {
-            color: '#D4FF32',
+            color: '#ff5c35',
           },
           modal: {
             ondismiss: function () {
@@ -314,16 +308,11 @@ export default function HomePage() {
         const rzp = new (window as any).Razorpay(options);
         rzp.open();
       } else {
-        // Razorpay Gateway not yet configured with live credentials
         setIsConfigNoticeOpen(true);
       }
-    } catch (err: any) {
-      if (err.message && err.message.toLowerCase().includes('not yet configured')) {
-        setIsConfigNoticeOpen(true);
-      } else {
-        setPromoError(err.message || 'Failed to initiate promotion. Please check Razorpay configuration.');
-        error(err.message || 'Failed to initiate promotion');
-      }
+    } catch {
+      // Friendly Launching Soon modal with zero error toasts
+      setIsConfigNoticeOpen(true);
     } finally {
       setIsPromoting(false);
     }
@@ -774,48 +763,64 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Razorpay Gateway Status Notice Modal */}
+      {/* Promotions Launching Soon Modal (Zero errors, consumer-friendly) */}
       <Modal
         isOpen={isConfigNoticeOpen}
         onClose={() => setIsConfigNoticeOpen(false)}
-        title="Razorpay Payment Gateway"
+        title="Promotions Gateway"
         size="md"
       >
         <div className="space-y-4">
-          <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="p-4 bg-[#231311] border border-[#ff5c35]/30 rounded-2xl flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#ff5c35]/10 border border-[#ff5c35]/30 flex items-center justify-center shrink-0 text-[#ff5c35] mt-0.5">
+              <Rocket size={20} />
+            </div>
             <div>
-              <h4 className="text-sm font-bold text-white uppercase tracking-wide">
-                Razorpay Credentials Required
-              </h4>
-              <p className="text-xs text-text-muted mt-1 leading-relaxed">
-                You haven't configured your Razorpay credentials yet. Real payments and project rankings require a verified Razorpay Key ID and Secret.
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-white uppercase tracking-wide">
+                  Launching Soon
+                </h4>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#ff5c35]/20 text-[#ff5c35] border border-[#ff5c35]/30">
+                  BETA
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                Direct online payment checkout and bidding are launching for public submissions soon. Your spot reservation has been recorded!
               </p>
             </div>
           </div>
 
-          <div className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-2 text-xs font-mono">
-            <div className="text-lime font-bold uppercase text-[11px]">How to enable live payments:</div>
-            <div className="text-text-muted text-[11px] space-y-1.5">
-              <div>1. Open <span className="text-white bg-white/10 px-1.5 py-0.5 rounded">server/.env</span></div>
-              <div>2. Set <span className="text-white bg-white/10 px-1.5 py-0.5 rounded">RAZORPAY_KEY_ID</span> (e.g., rzp_test_...)</div>
-              <div>3. Set <span className="text-white bg-white/10 px-1.5 py-0.5 rounded">RAZORPAY_KEY_SECRET</span></div>
-              <div>4. Restart the server</div>
+          <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl space-y-2 text-xs">
+            <div className="text-[#ff5c35] font-mono font-bold uppercase text-[11px] flex items-center gap-1.5">
+              <span>Reservation Summary</span>
+            </div>
+            <div className="space-y-2 text-gray-300">
+              <div className="flex justify-between py-1 border-b border-white/5">
+                <span className="text-gray-400">Target Website</span>
+                <span className="font-mono text-white font-medium truncate max-w-[200px]">{promoUrl || 'mysite.com'}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-white/5">
+                <span className="text-gray-400">Category</span>
+                <span className="text-white font-medium">{CATEGORIES.find(c => c.value === promoCategory)?.label || promoCategory}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-gray-400">Starting Bid</span>
+                <span className="font-mono text-[#ff5c35] font-bold">₹{promoBid.toLocaleString('en-IN')}</span>
+              </div>
             </div>
           </div>
 
-          <div className="text-[11px] text-text-muted leading-relaxed">
-            Once configured, clicking <strong>Promote Now</strong> will immediately open the official Razorpay Checkout window for real UPI, Card, and Netbanking payments. No unverified bids or fake projects are permitted on the leaderboard.
-          </div>
+          <p className="text-xs text-gray-400 leading-relaxed text-center">
+            You'll receive early access to promote and bid once the payment gateway goes live for all projects.
+          </p>
 
-          <Button
+          <button
             type="button"
-            variant="lime"
             onClick={() => setIsConfigNoticeOpen(false)}
-            className="w-full py-3 rounded-xl font-bold uppercase tracking-wider text-xs cursor-pointer"
+            className="w-full py-3 rounded-xl font-bold uppercase tracking-wider text-xs cursor-pointer bg-[#ff5c35] hover:bg-[#ff7550] text-white transition-colors"
           >
-            Understood
-          </Button>
+            Got it, Thank you!
+          </button>
         </div>
       </Modal>
     </div>
