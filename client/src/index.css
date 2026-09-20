@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #050508;
+  --color-surface: #0c0d12;
+  --color-elevated: #14151f;
+  --color-lime: #d4ff32;
+  --color-lime-hover: #b8e620;
+  --color-lime-glow: rgba(212, 255, 50, 0.25);
+  --color-primary: #d4ff32;
+  --color-primary-hover: #b8e620;
+  --color-primary-light: rgba(212, 255, 50, 0.12);
+  --color-secondary: #8B5CF6;
+  --color-secondary-hover: #7C3AED;
+  --color-text: #F8FAFC;
+  --color-text-muted: #94A3B8;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-glow: rgba(212, 255, 50, 0.3);
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Syne', 'Outfit', sans-serif;
+  --font-heading: 'Outfit', 'Inter', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-text font-sans antialiased selection:bg-lime/30 selection:text-white;
+    background-image: 
+      radial-gradient(ellipse at 50% 0%, rgba(212, 255, 50, 0.06) 0%, transparent 70%),
+      radial-gradient(ellipse at 80% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%);
+    background-attachment: fixed;
+  }
+}
+
+/* Custom Grid Background Pattern */
+.bg-grid-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Editorial Glass Card */
+.glass-card {
+  background: rgba(12, 13, 18, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card:hover {
+  border-color: rgba(212, 255, 50, 0.3);
+  box-shadow: 0 0 30px rgba(212, 255, 50, 0.08);
+}
+
+/* Glowing text gradient */
+.text-glow {
+  text-shadow: 0 0 30px rgba(212, 255, 50, 0.4);
+}
+
+/* Marquee Ticker Animation */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050508;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #14151f;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 255, 50, 0.4);
+}
+
+@layer utilities {
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-lime/50 focus:border-lime;
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+}
+

@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  role         String        @default("USER")
+  status       String        @default("ACTIVE")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  projects     Project[]
+  bids         Bid[]
+  payments     Payment[]
+  auditLogs    AuditLog[]
+}
+
+model Project {
+  id               String          @id @default(cuid())
+  ownerId          String
+  owner            User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name             String
+  slug             String          @unique
+  url              String
+  shortDescription String
+  description      String
+  category         String
+  imageUrl         String?
+  founderName      String?
+  contactEmail     String?
+  socialLinks      String?
+  status           String          @default("PENDING_REVIEW")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  bids             Bid[]
+  ranking          Ranking?
+  analyticsEvents  AnalyticsEvent[]
+
+  @@index([ownerId])
+  @@index([category])
+  @@index([status])
+  @@index([slug])
+}
+
+model Bid {
+  id        String    @id @default(cuid())
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  bidderId  String
+  bidder    User      @relation(fields: [bidderId], references: [id], onDelete: Cascade)
+  amount    Float
+  currency  String    @default("INR")
+  status    String    @default("PENDING")
+  createdAt DateTime  @default(now())
+  payment   Payment?
+
+  @@index([projectId])
+  @@index([bidderId])
+  @@index([status])
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  bidId             String   @unique
+  bid               Bid      @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  provider          String   @default("RAZORPAY")
+  providerOrderId   String?  @unique
+  providerPaymentId String?  @unique
+  providerSignature String?
+  amount            Float
+  currency          String   @default("INR")
+  status            String   @default("CREATED")
+  metadata          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([providerOrderId])
+}
+
+model Ranking {
+  projectId    String    @id @unique
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  rank         Int
+  rankingValue Float
+  lastBidAt    DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@index([rank])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String
+  metadata   String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  eventType  String
+  sessionId  String?
+  referrer   String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([projectId, eventType])
+}
+
+model BidConfig {
+  id           String   @id @default(cuid())
+  minBid       Float    @default(199)
+  minIncrement Float    @default(50)
+  currency     String   @default("INR")
+  allowSelfBid Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
