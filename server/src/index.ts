@@ -46,7 +46,7 @@ const corsOptions: cors.CorsOptions = {
     }
     try {
       const parsed = new URL(normalizedOrigin);
-      if (parsed.hostname.endsWith('.vercel.app')) {
+      if (parsed.hostname.endsWith('.vercel.app') || parsed.hostname.endsWith('.onrender.com')) {
         return callback(null, true);
       }
     } catch {

@@ -4,7 +4,11 @@ import { io, Socket } from 'socket.io-client';
 const getSocketBaseUrl = (): string => {
   const envUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
   if (!envUrl) return window.location.origin;
-  return envUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+  let formatted = envUrl;
+  if (!formatted.startsWith('http://') && !formatted.startsWith('https://')) {
+    formatted = `https://${formatted}`;
+  }
+  return formatted.replace(/\/api\/?$/, '').replace(/\/$/, '');
 };
 
 export const useSocket = () => {

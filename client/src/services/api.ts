@@ -1,7 +1,11 @@
 const getApiBaseUrl = (): string => {
   const envUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
   if (!envUrl) return '/api';
-  const cleaned = envUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+  let formatted = envUrl;
+  if (!formatted.startsWith('http://') && !formatted.startsWith('https://') && !formatted.startsWith('/')) {
+    formatted = `https://${formatted}`;
+  }
+  const cleaned = formatted.replace(/\/api\/?$/, '').replace(/\/$/, '');
   return `${cleaned}/api`;
 };
 
