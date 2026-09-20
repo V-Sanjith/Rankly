@@ -14,6 +14,10 @@ services:
         fromDatabase:
           name: rankly-db
           property: connectionString
+      - key: DIRECT_URL
+        fromDatabase:
+          name: rankly-db
+          property: connectionString
       - key: CLIENT_URL
         value: https://rankly-vsanjith.onrender.com
       - key: JWT_SECRET
